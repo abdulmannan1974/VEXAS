@@ -98,7 +98,9 @@
       transition: background .15s, color .15s;
     }
 
-    .nav-link:hover { background: var(--cream-2); color: var(--ink); }
+    .nav-link:hover  { background: var(--cream-2); color: var(--ink); }
+    .nav-link:active { background: var(--border-2); color: var(--ink); transform: scale(0.97); }
+    .nav-link.active { color: var(--red); font-weight: 600; }
 
     .nav-pill {
       font-size: 11px; font-weight: 700; letter-spacing: 0.4px;
@@ -409,9 +411,24 @@
     .result-low  .result-subtitle{ color: var(--blue-lf); }
     .result-low  .result-body    { color: #1E3A8A; }
 
+    /* ─── SCROLL OFFSET (accounts for 64px sticky nav) ─ */
+    #calculator,
+    #decision-space,
+    #reference {
+      scroll-margin-top: 80px;
+    }
+
     /* ─── SCATTER PLOT ────────────────────────────── */
     .chart-wrap {
       display: flex; flex-direction: column; align-items: center; gap: 16px;
+      width: 100%;
+    }
+
+    .chart-wrap svg {
+      display: block;
+      margin: 0 auto;
+      max-width: 500px;
+      width: 100%;
     }
 
     .chart-legend {
@@ -790,7 +807,7 @@
         </div>
       </div>
       <div class="card-body chart-wrap">
-        <svg id="scatter" viewBox="0 0 320 210" width="100%" style="max-width:500px; display:block;"></svg>
+        <svg id="scatter" viewBox="0 0 320 210" width="100%"></svg>
         <div class="chart-legend">
           <div class="chart-legend-item">
             <div class="legend-dot" style="background:#F59E0B;opacity:.85"></div>
@@ -950,7 +967,7 @@
     const highPts = [[0,20],[0,yMax],[xMax,yMax],[xMax,0],[40,0]].map(([x,y]) => `${tx(x)},${ty(y)}`).join(' ');
     const lowPts  = [[0,0],[0,20],[40,0]].map(([x,y]) => `${tx(x)},${ty(y)}`).join(' ');
 
-    let s = `<svg id="scatter" viewBox="0 0 ${W} ${H}" width="100%" style="max-width:500px;display:block;">`;
+    let s = `<svg id="scatter" viewBox="0 0 ${W} ${H}" width="100%">`;
 
     s += `<polygon points="${highPts}" fill="#FEF3C7" opacity="0.85"/>`;
     s += `<polygon points="${lowPts}"  fill="#DBEAFE" opacity="0.85"/>`;
@@ -1051,6 +1068,24 @@
     const wrap = document.getElementById('scatter').parentElement;
     wrap.innerHTML = buildSVG(en, ep, isHigh);
   }
+
+  /* ─── ACTIVE NAV HIGHLIGHT ON SCROLL ─────────────── */
+  const navLinks = document.querySelectorAll('.nav-link[href^="#"]');
+  const sections = ['calculator', 'decision-space', 'reference'].map(id => document.getElementById(id));
+
+  function setActive() {
+    const scrollY = window.scrollY + 100;
+    let current = '';
+    sections.forEach(sec => {
+      if (sec && sec.offsetTop <= scrollY) current = sec.id;
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  }
+
+  window.addEventListener('scroll', setActive, { passive: true });
+  setActive();
 
   /* initial render */
   update();
